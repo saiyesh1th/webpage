@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import TasksPage from './components/TasksPage';
@@ -11,6 +11,7 @@ import FocusMode from './components/FocusMode';
 import LevelUpModal from './components/LevelUpModal';
 import LoginPage from './components/LoginPage';
 import useLocalStorage from './hooks/useLocalStorage';
+import { supabase } from './services/supabaseClient';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -18,10 +19,7 @@ function App() {
   // USER STATE
   const [user, setUser] = useLocalStorage('studysync-user', null);
 
-
-
-  // Derived key prefix based on user ID (or 'guest' if not logged in, though we force login now)
-  // We use a specific prefix for the user to ensure data isolation.
+  // Derived key prefix based on user ID
   const userPrefix = user ? `studysync-${user.id}` : 'studysync-guest';
 
   // TASKS STATE
@@ -56,13 +54,87 @@ function App() {
   const [focusedTaskId, setFocusedTaskId] = useLocalStorage(`${userPrefix}-focus`, null);
   const [isFocusModeActive, setIsFocusModeActive] = useState(false);
 
-  // PREFERENCES STATE (Lifted)
-  // Preferences might be global or per user? Let's make them per user for full customization.
+  // PREFERENCES STATE
   const [preferences, setPreferences] = useLocalStorage(`${userPrefix}-preferences`, {
     darkMode: true,
     notifications: true,
     sound: true
   });
+
+  // SUPABASE SYNC LOGIC
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const saveTimeoutRefs = useRef({});
+
+  // 1. Fetch data on login
+  useEffect(() => {
+    if (!user || user.authType !== 'supabase') {
+      setIsDataLoaded(true); // Treat guest/manual auth as always loaded
+      return;
+    }
+
+    const loadData = async () => {
+      setIsDataLoaded(false);
+      try {
+        const { data, error } = await supabase
+          .from('user_data')
+          .select('key, value')
+          .eq('user_id', user.id);
+
+        if (error) {
+          console.error('Error fetching data from Supabase:', error);
+          setIsDataLoaded(true);
+          return;
+        }
+
+        const dataMap = data.reduce((acc, item) => ({ ...acc, [item.key]: item.value }), {});
+
+        if (dataMap.tasks) setTasks(dataMap.tasks);
+        if (dataMap.stats) setStats(dataMap.stats);
+        if (dataMap.notes) setNotes(dataMap.notes);
+        if (dataMap.subjects) setSubjects(dataMap.subjects);
+        if (dataMap.challenges) setChallenges(dataMap.challenges);
+        if (dataMap.preferences) setPreferences(dataMap.preferences);
+
+      } catch (err) {
+        console.error('Unexpected error loading data:', err);
+      } finally {
+        setIsDataLoaded(true);
+      }
+    };
+
+    loadData();
+  }, [user]);
+
+  // 2. Save data helper
+  const saveToSupabase = async (key, value) => {
+    if (!user || user.authType !== 'supabase') return;
+
+    try {
+      const { error } = await supabase
+        .from('user_data')
+        .upsert({ user_id: user.id, key, value }, { onConflict: 'user_id, key' });
+
+      if (error) console.error(`Error saving ${key} to Supabase:`, error);
+    } catch (err) {
+      console.error(`Unexpected error saving ${key}:`, err);
+    }
+  };
+
+  const debouncedSave = (key, value) => {
+    if (saveTimeoutRefs.current[key]) clearTimeout(saveTimeoutRefs.current[key]);
+    saveTimeoutRefs.current[key] = setTimeout(() => {
+      saveToSupabase(key, value);
+    }, 2000); // 2 second debounce
+  };
+
+  // 3. Watchers for state changes
+  useEffect(() => { if (isDataLoaded) debouncedSave('tasks', tasks); }, [tasks, isDataLoaded]);
+  useEffect(() => { if (isDataLoaded) debouncedSave('stats', stats); }, [stats, isDataLoaded]);
+  useEffect(() => { if (isDataLoaded) debouncedSave('notes', notes); }, [notes, isDataLoaded]);
+  useEffect(() => { if (isDataLoaded) debouncedSave('subjects', subjects); }, [subjects, isDataLoaded]);
+  useEffect(() => { if (isDataLoaded) debouncedSave('challenges', challenges); }, [challenges, isDataLoaded]);
+  useEffect(() => { if (isDataLoaded) debouncedSave('preferences', preferences); }, [preferences, isDataLoaded]);
+
 
   // TIMER STATE (Lifted)
   const [timerState, setTimerState] = useState({
@@ -232,7 +304,10 @@ function App() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (user && user.authType === 'supabase') {
+        await supabase.auth.signOut();
+    }
     setUser(null);
     setCurrentPage('dashboard');
   };
