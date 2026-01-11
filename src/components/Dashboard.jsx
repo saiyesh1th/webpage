@@ -64,7 +64,7 @@ const Dashboard = ({
             className="flex flex-col lg:flex-row w-full h-full"
         >
             {/* LEFT COLUMN: FOCUS ZONE (65%) */}
-            <div className="flex-1 lg:flex-[0.65] flex flex-col justify-center items-center p-12 relative">
+            <div className="flex-1 lg:flex-[0.65] flex flex-col justify-center items-center p-6 relative">
 
                 {/* Floating Header Stats - Funny Progress Bar */}
                 <motion.div variants={item} className="absolute top-8 left-8 w-64">

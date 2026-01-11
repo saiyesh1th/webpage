@@ -17,10 +17,10 @@ function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
 
   // USER STATE
-  const [user, setUser] = useLocalStorage('studysync-user', null);
+  const [user, setUser] = useLocalStorage('struktify-user', null);
 
   // Derived key prefix based on user ID
-  const userPrefix = user ? `studysync-${user.id}` : 'studysync-guest';
+  const userPrefix = user ? `struktify-${user.id}` : 'struktify-guest';
 
   // TASKS STATE
   const [tasks, setTasks] = useLocalStorage(`${userPrefix}-tasks`, [
@@ -192,16 +192,16 @@ function App() {
       // Show Notification
       if (preferences.notifications) {
         if (Notification.permission === 'granted') {
-          new Notification('StudySync', {
+          new Notification('Struktify', {
             body: 'Timer Finished! Take a break.',
-            icon: '/vite.svg'
+            icon: '/struktify-logo.png'
           });
         } else if (Notification.permission !== 'denied') {
           Notification.requestPermission().then(permission => {
             if (permission === 'granted') {
-              new Notification('StudySync', {
+              new Notification('Struktify', {
                 body: 'Timer Finished! Take a break.',
-                icon: '/vite.svg'
+                icon: '/struktify-logo.png'
               });
             }
           });

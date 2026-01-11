@@ -17,7 +17,7 @@ const Layout = ({ children, currentPage, onNavigate }) => {
                             <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
                         </svg>
                     </div>
-                    <h1 className="text-2xl font-bold tracking-widest uppercase text-shadow-glow text-terminal-accent">Flowcus</h1>
+                    <h1 className="text-2xl font-bold tracking-widest uppercase text-shadow-glow text-terminal-accent">Struktify</h1>
                 </div>
 
                 <nav className="flex-1 px-4 py-6 space-y-2">
@@ -73,7 +73,7 @@ const Layout = ({ children, currentPage, onNavigate }) => {
             <header className="md:hidden absolute top-0 left-0 right-0 h-16 bg-terminal-dim/40 backdrop-blur-xl border-b border-terminal-accent/10 flex items-center justify-between px-4 z-20">
                 <h1 className="text-xl font-bold text-terminal-accent tracking-tight flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
-                    Flowcus
+                    Struktify
                 </h1>
                 <div className="w-8 h-8 rounded-full bg-terminal-accent/10 flex items-center justify-center">
                     <User className="w-4 h-4 text-terminal-accent" />

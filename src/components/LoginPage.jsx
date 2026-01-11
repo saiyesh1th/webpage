@@ -84,79 +84,90 @@ const LoginPage = ({ onLogin }) => {
     };
 
     return (
-        <div className="min-h-screen bg-terminal-bg flex items-center justify-center font-mono text-terminal-accent p-8 relative overflow-hidden">
+        <div className="min-h-screen bg-terminal-bg flex items-center justify-center font-mono text-terminal-accent p-4 relative overflow-hidden">
             {/* Background Effects */}
             <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-0 left-0 w-full h-1 bg-terminal-accent/20 animate-scanline"></div>
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(0,0,0,0.4)_100%)]"></div>
+                <div className="absolute top-0 left-0 w-full h-1 bg-terminal-accent/10 animate-scanline"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(14,165,233,0.1)_0%,_rgba(0,0,0,0)_70%)]"></div>
+                <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06))', backgroundSize: '100% 2px, 3px 100%' }}></div>
             </div>
 
             <AnimatePresence mode="wait">
                 {step === 'BOOT' && (
                     <motion.div
                         key="boot"
-                        exit={{ opacity: 0 }}
-                        className="max-w-md w-full space-y-2"
+                        exit={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
+                        className="max-w-md w-full space-y-2 relative z-10"
                     >
                         <Typewriter text="> INITIALIZING SYSTEM..." delay={0} />
-                        <Typewriter text="> CONNECTING TO NETWORK..." delay={500} />
-                        <Typewriter text="> ESTABLISHING SECURE UPLINK..." delay={1000} />
+                        <Typewriter text="> CONNECTING TO NETWORK..." delay={300} />
+                        <Typewriter text="> ESTABLISHING SECURE UPLINK..." delay={600} />
+                        <Typewriter text="> ACCESS GRANTED." delay={900} />
                     </motion.div>
                 )}
 
                 {step === 'AUTH' && (
                     <motion.div
                         key="auth"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="w-full max-w-md bg-terminal-dim/30 border border-terminal-accent/30 rounded-2xl p-8 backdrop-blur-md shadow-[0_0_30px_rgba(var(--terminal-accent),0.15)] relative z-10"
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                        className="w-full max-w-md bg-black/60 border border-terminal-accent/30 rounded-2xl p-8 backdrop-blur-xl shadow-[0_0_50px_rgba(var(--terminal-accent),0.1)] relative z-10 group"
                     >
-                        <div className="text-center mb-8">
-                            <Terminal className="w-12 h-12 text-terminal-accent mx-auto mb-4" />
-                            <h1 className="text-2xl font-bold text-terminal-accent mb-2">
+                        {/* Decorative Corner Markers */}
+                        <div className="absolute -top-1 -left-1 w-4 h-4 border-t-2 border-l-2 border-terminal-accent rounded-tl-lg"></div>
+                        <div className="absolute -top-1 -right-1 w-4 h-4 border-t-2 border-r-2 border-terminal-accent rounded-tr-lg"></div>
+                        <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-2 border-l-2 border-terminal-accent rounded-bl-lg"></div>
+                        <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-2 border-r-2 border-terminal-accent rounded-br-lg"></div>
+
+                        <div className="text-center mb-8 relative">
+                            <div className="w-16 h-16 mx-auto mb-4 bg-terminal-accent/10 rounded-full flex items-center justify-center border border-terminal-accent/30 shadow-[0_0_15px_rgba(var(--terminal-accent),0.2)] group-hover:shadow-[0_0_25px_rgba(var(--terminal-accent),0.4)] transition-all duration-500">
+                                <Terminal className="w-8 h-8 text-terminal-accent" />
+                            </div>
+                            <h1 className="text-3xl font-bold text-terminal-accent mb-2 tracking-tight">
                                 {authMode === 'LOGIN' ? 'SYSTEM ACCESS' : 'NEW REGISTRATION'}
                             </h1>
-                            <p className="text-terminal-content/60 text-sm">
-                                {authMode === 'LOGIN' ? '> ENTER CREDENTIALS' : '> CREATE IDENTITY'}
+                            <p className="text-terminal-content/60 text-sm tracking-wide">
+                                {authMode === 'LOGIN' ? '> PLEASE AUTHENTICATE' : '> INITIALIZE PROTOCOLS'}
                             </p>
                         </div>
 
                         {error && (
                             <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="mb-6 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm flex items-start gap-2"
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-start gap-3 shadow-inner"
                             >
-                                <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                                <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
                                 <span>{error}</span>
                             </motion.div>
                         )}
 
-                        <form onSubmit={handleAuth} className="space-y-4">
-                            <div className="space-y-1">
-                                <label className="text-xs text-terminal-accent/70 ml-1">EMAIL</label>
-                                <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-terminal-accent/50" />
+                        <form onSubmit={handleAuth} className="space-y-5">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-terminal-accent/80 ml-1 tracking-wider">EMAIL ADDRESS</label>
+                                <div className="relative group/input">
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-terminal-accent/40 group-focus-within/input:text-terminal-accent transition-colors" />
                                     <input
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full bg-terminal-bg/50 border border-terminal-accent/20 rounded-xl pl-10 pr-4 py-3 text-terminal-content placeholder-terminal-content/20 focus:outline-none focus:border-terminal-accent/60 focus:shadow-[0_0_15px_rgba(var(--terminal-accent),0.1)] transition-all font-mono"
-                                        placeholder="user@studysync.net"
+                                        className="w-full bg-terminal-bg/40 border-2 border-terminal-accent/10 rounded-xl pl-12 pr-4 py-3.5 text-terminal-content placeholder-terminal-content/20 focus:outline-none focus:border-terminal-accent focus:bg-terminal-bg/60 transition-all font-mono shadow-inner"
+                                        placeholder="user@struktify.net"
                                         required
                                     />
                                 </div>
                             </div>
 
-                            <div className="space-y-1">
-                                <label className="text-xs text-terminal-accent/70 ml-1">PASSWORD</label>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-terminal-accent/50" />
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-terminal-accent/80 ml-1 tracking-wider">PASSWORD</label>
+                                <div className="relative group/input">
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-terminal-accent/40 group-focus-within/input:text-terminal-accent transition-colors" />
                                     <input
                                         type="password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full bg-terminal-bg/50 border border-terminal-accent/20 rounded-xl pl-10 pr-4 py-3 text-terminal-content placeholder-terminal-content/20 focus:outline-none focus:border-terminal-accent/60 focus:shadow-[0_0_15px_rgba(var(--terminal-accent),0.1)] transition-all font-mono"
+                                        className="w-full bg-terminal-bg/40 border-2 border-terminal-accent/10 rounded-xl pl-12 pr-4 py-3.5 text-terminal-content placeholder-terminal-content/20 focus:outline-none focus:border-terminal-accent focus:bg-terminal-bg/60 transition-all font-mono shadow-inner"
                                         placeholder="••••••••"
                                         required
                                         minLength={6}
@@ -167,32 +178,32 @@ const LoginPage = ({ onLogin }) => {
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full bg-terminal-accent text-terminal-bg font-bold py-3 rounded-xl shadow-[0_0_20px_rgba(var(--terminal-accent),0.3)] hover:shadow-[0_0_30px_rgba(var(--terminal-accent),0.5)] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+                                className="w-full bg-terminal-accent text-terminal-bg font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(var(--terminal-accent),0.2)] hover:shadow-[0_0_30px_rgba(var(--terminal-accent),0.4)] hover:bg-white transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mt-6 transform active:scale-[0.98]"
                             >
                                 {isLoading ? (
                                     <Loader2 className="w-5 h-5 animate-spin" />
                                 ) : (
                                     <>
                                         <span>{authMode === 'LOGIN' ? 'AUTHENTICATE' : 'INITIALIZE'}</span>
-                                        <ArrowRight className="w-5 h-5" />
+                                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                     </>
                                 )}
                             </button>
                         </form>
 
-                        <div className="mt-6 text-center">
+                        <div className="mt-8 text-center border-t border-terminal-accent/10 pt-6">
                             <button
                                 onClick={toggleMode}
-                                className="text-terminal-accent/70 hover:text-terminal-accent text-sm hover:underline flex items-center justify-center gap-2 w-full transition-colors"
+                                className="text-terminal-accent/60 hover:text-terminal-accent text-sm hover:underline flex items-center justify-center gap-2 w-full transition-colors group/toggle"
                             >
                                 {authMode === 'LOGIN' ? (
                                     <>
-                                        <UserPlus className="w-4 h-4" />
+                                        <UserPlus className="w-4 h-4 group-hover/toggle:scale-110 transition-transform" />
                                         <span>CREATE NEW IDENTITY</span>
                                     </>
                                 ) : (
                                     <>
-                                        <LogIn className="w-4 h-4" />
+                                        <LogIn className="w-4 h-4 group-hover/toggle:scale-110 transition-transform" />
                                         <span>ACCESS EXISTING ACCOUNT</span>
                                     </>
                                 )}

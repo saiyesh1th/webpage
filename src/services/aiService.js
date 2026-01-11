@@ -15,7 +15,7 @@ export const sendMessageToAi = async (message) => {
             body: JSON.stringify({
                 contents: [{
                     parts: [{
-                        text: `You are a helpful, motivating study assistant named StudySync AI. 
+                        text: `You are a helpful, motivating study assistant named Struktify AI. 
                         If the user asks to add a task, start your response with the command: [ADD_TASK:task_text:priority]. 
                         Priority can be 'high', 'medium', or 'low'. Default to 'medium' if not specified.
                         Example: User "add study high priority" -> Response "[ADD_TASK:study:high] Added 'study' to your high priority list! 🚀"
