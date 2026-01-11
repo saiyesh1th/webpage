@@ -96,11 +96,11 @@ const SettingsPage = ({ onResetData, preferences, setPreferences, user, onLogout
                     >
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 rounded-xl bg-terminal-accent/10 flex items-center justify-center border border-terminal-accent/20">
-                                <span className="text-xl font-bold text-terminal-accent">{user.name.charAt(0).toUpperCase()}</span>
+                                <span className="text-xl font-bold text-terminal-accent">{(user.name || user.email || 'U').charAt(0).toUpperCase()}</span>
                             </div>
                             <div>
-                                <h2 className="text-lg font-bold text-terminal-content">{user.name}</h2>
-                                <p className="text-xs text-terminal-content/60 font-mono">OPERATOR // {user.avatar.toUpperCase()}</p>
+                                <h2 className="text-lg font-bold text-terminal-content">{user.name || user.email}</h2>
+                                <p className="text-xs text-terminal-content/60 font-mono">OPERATOR // {(user.authType || 'GUEST').toUpperCase()}</p>
                             </div>
                         </div>
                         <button

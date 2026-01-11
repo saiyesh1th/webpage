@@ -63,6 +63,8 @@ function App() {
 
   // SUPABASE SYNC LOGIC
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [syncStatus, setSyncStatus] = useState('idle'); // idle, syncing, error, saved
+  const [syncError, setSyncError] = useState(null);
   const saveTimeoutRefs = useRef({});
 
   // 1. Fetch data on login
@@ -74,6 +76,7 @@ function App() {
 
     const loadData = async () => {
       setIsDataLoaded(false);
+      setSyncStatus('syncing');
       try {
         const { data, error } = await supabase
           .from('user_data')
@@ -82,6 +85,8 @@ function App() {
 
         if (error) {
           console.error('Error fetching data from Supabase:', error);
+          setSyncError(error.message);
+          setSyncStatus('error');
           setIsDataLoaded(true);
           return;
         }
@@ -95,8 +100,12 @@ function App() {
         if (dataMap.challenges) setChallenges(dataMap.challenges);
         if (dataMap.preferences) setPreferences(dataMap.preferences);
 
+        setSyncStatus('idle');
+
       } catch (err) {
         console.error('Unexpected error loading data:', err);
+        setSyncError(err.message);
+        setSyncStatus('error');
       } finally {
         setIsDataLoaded(true);
       }
@@ -109,14 +118,25 @@ function App() {
   const saveToSupabase = async (key, value) => {
     if (!user || user.authType !== 'supabase') return;
 
+    setSyncStatus('syncing');
+    setSyncError(null);
     try {
       const { error } = await supabase
         .from('user_data')
         .upsert({ user_id: user.id, key, value }, { onConflict: 'user_id, key' });
 
-      if (error) console.error(`Error saving ${key} to Supabase:`, error);
+      if (error) {
+        console.error(`Error saving ${key} to Supabase:`, error);
+        setSyncError(error.message);
+        setSyncStatus('error');
+      } else {
+        setSyncStatus('saved');
+        setTimeout(() => setSyncStatus('idle'), 2000);
+      }
     } catch (err) {
       console.error(`Unexpected error saving ${key}:`, err);
+      setSyncError(err.message);
+      setSyncStatus('error');
     }
   };
 
@@ -306,7 +326,7 @@ function App() {
 
   const handleLogout = async () => {
     if (user && user.authType === 'supabase') {
-        await supabase.auth.signOut();
+      await supabase.auth.signOut();
     }
     setUser(null);
     setCurrentPage('dashboard');
@@ -400,6 +420,23 @@ function App() {
         />
       )}
       <AiFab onAddTask={addTask} />
+
+      {/* Sync Status Indicator */}
+      {user && user.authType === 'supabase' && (
+        <div className="fixed bottom-4 left-4 z-50 flex items-center gap-2 bg-terminal-dim/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-terminal-accent/20 text-xs font-mono">
+          <div className={`w-2 h-2 rounded-full ${params => {
+            switch (syncStatus) {
+              case 'syncing': return 'bg-yellow-400 animate-pulse';
+              case 'error': return 'bg-red-500';
+              case 'saved': return 'bg-green-500';
+              default: return 'bg-terminal-accent/50';
+            }
+          }}`}></div>
+          <span className={syncStatus === 'error' ? 'text-red-400' : 'text-terminal-content/60'}>
+            {syncStatus === 'error' ? (syncError || 'Sync Error') : syncStatus.toUpperCase()}
+          </span>
+        </div>
+      )}
     </Layout>
   );
 }

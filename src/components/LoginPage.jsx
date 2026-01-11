@@ -17,7 +17,7 @@ const LoginPage = ({ onLogin }) => {
             // Check for existing session
             supabase.auth.getSession().then(({ data: { session } }) => {
                 if (session?.user) {
-                     onLogin({
+                    onLogin({
                         id: session.user.id,
                         email: session.user.email,
                         joinedAt: session.user.created_at,
@@ -44,13 +44,17 @@ const LoginPage = ({ onLogin }) => {
                     password,
                 });
                 if (error) throw error;
-                if (data.user) {
-                     onLogin({
+                if (data.session) {
+                    onLogin({
                         id: data.user.id,
                         email: data.user.email,
                         joinedAt: data.user.created_at,
                         authType: 'supabase'
                     });
+                } else if (data.user && !data.session) {
+                    // User created but not authenticated (likely needs email confirmation)
+                    setError('Account created! Please check your email to confirm your registration before logging in.');
+                    setAuthMode('LOGIN');
                 }
             } else {
                 const { data, error } = await supabase.auth.signInWithPassword({
@@ -59,7 +63,7 @@ const LoginPage = ({ onLogin }) => {
                 });
                 if (error) throw error;
                 if (data.user) {
-                     onLogin({
+                    onLogin({
                         id: data.user.id,
                         email: data.user.email,
                         joinedAt: data.user.created_at,
